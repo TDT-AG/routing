@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=hnetd
 PKG_SOURCE_VERSION:=606d7e904603ad8792ac1a7ba825618df97b5a4e
 PKG_VERSION:=2016-06-28-$(PKG_SOURCE_VERSION)
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/sbyx/hnetd.git
@@ -38,7 +38,7 @@ define Package/hnetd/Default
   TITLE:=HNCP Homenet daemon - $(2)
   URL:=https://github.com/sbyx/hnetd
   DEPENDS:=+odhcpd +odhcp6c +netifd $(3)
-  DEPENDS+=@IPV6
+  DEPENDS+=@IPV6 +hnet
   VARIANT:=$1
 endef
 
@@ -87,6 +87,13 @@ define Package/hnet-full-l2tp
   DEPENDS+=+miniupnpd +minimalist-pcproxy
 endef
 
+define Package/hnet
+  SECTION:=net
+  CATEGORY:=Network
+  TITLE:=HNCP Homenet netifd proto support
+  DEPENDS:=+netifd
+endef
+
 define Package/luci-app-hnet
   SECTION:=luci
   CATEGORY:=LuCI
@@ -106,8 +113,6 @@ endef
 define Package/hnetd-$(BUILD_VARIANT)/install
 	$(INSTALL_DIR) $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/hnetd $(1)/usr/sbin/
-	$(INSTALL_DIR) $(1)/lib/netifd/proto
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openwrt/hnet.sh $(1)/lib/netifd/proto
 	ln -s hnetd $(1)/usr/sbin/hnet-ifresolve
 	ln -s hnetd $(1)/usr/sbin/hnet-trust
 	ln -s hnetd $(1)/usr/sbin/hnet-dump
@@ -131,6 +136,11 @@ endef
 
 define Package/hnet-full-secure/install
 	true
+endef
+
+define Package/hnet/install
+	$(INSTALL_DIR) $(1)/lib/netifd/proto
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openwrt/hnet.sh $(1)/lib/netifd/proto
 endef
 
 define Package/hnet-full-l2tp/install
@@ -160,4 +170,5 @@ $(eval $(call BuildPackage,hnetd-openssl))
 $(eval $(call BuildPackage,hnet-full))
 $(eval $(call BuildPackage,hnet-full-secure))
 $(eval $(call BuildPackage,hnet-full-l2tp))
+$(eval $(call BuildPackage,hnet))
 $(eval $(call BuildPackage,luci-app-hnet))
